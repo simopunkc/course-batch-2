@@ -11,7 +11,7 @@
 - golang
 
 ## API Documentation
-can check this ![documentation](./db_diagram.png) using [swagger](https://edit.swagger.io/) 
+can check this ![documentation](./openapi.json) using [swagger](https://edit.swagger.io/) 
 
 ## API
 - create register user
