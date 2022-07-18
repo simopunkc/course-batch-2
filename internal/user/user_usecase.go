@@ -86,6 +86,44 @@ func (uu UserUsecase) Register(c *gin.Context) {
 	})
 }
 
+func (uu UserUsecase) Login(c *gin.Context) {
+	var userRequest domain.User
+	err := c.ShouldBind(&userRequest)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "invalid input",
+		})
+		return
+	}
+	if userRequest.Email == "" || userRequest.Password == "" {
+		c.JSON(400, gin.H{
+			"message": "email/password salah",
+		})
+		return
+	}
+
+	var user domain.User
+	err = uu.db.Where("email = ?", userRequest.Email).Take(&user).Error
+	if err != nil || user.ID == 0 {
+		c.JSON(400, gin.H{
+			"message": "email/password salah",
+		})
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userRequest.Password))
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "email/password salah",
+		})
+		return
+	}
+	token, _ := generateJWT(user.ID)
+	c.JSON(200, gin.H{
+		"token": token,
+	})
+}
+
 func generateJWT(userID int) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
