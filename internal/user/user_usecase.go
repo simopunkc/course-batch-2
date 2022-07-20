@@ -3,6 +3,7 @@ package user
 import (
 	"course/internal/domain"
 	"errors"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ import (
 )
 
 var (
-	privateKey []byte = []byte("mySignaturePrivateKey")
+	privateKey []byte = []byte(os.Getenv("JWT_PRIVATE_KEY"))
 )
 
 type UserUsecase struct {
