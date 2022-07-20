@@ -31,6 +31,7 @@ func main() {
 	r.POST("/login", userUsecase.Login)
 	r.POST("/exercises/", middleware.WithJWT(userUsecase), exerciseService.CreateExercise)
 	r.POST("/questions/", middleware.WithJWT(userUsecase), exerciseService.CreateQuestion)
+	r.POST("/answers/", middleware.WithJWT(userUsecase), exerciseService.CreateAnswer)
 
 	r.GET("/exercises/:id", middleware.WithJWT(userUsecase), exerciseService.GetExerciseByID)
 	r.GET("/exercises/:id/score", middleware.WithJWT(userUsecase), exerciseService.CalculateUserScore)

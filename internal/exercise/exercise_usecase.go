@@ -209,3 +209,54 @@ func (eu ExerciseUsecase) CreateQuestion(c *gin.Context) {
 		"status": "berhasil membuat question",
 	})
 }
+
+func (eu ExerciseUsecase) CreateAnswer(c *gin.Context) {
+	var answer domain.Answer
+	err := c.ShouldBind(&answer)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "invalid input",
+		})
+		return
+	}
+
+	if answer.ExerciseID == 0 {
+		c.JSON(400, gin.H{
+			"message": "field exerciseId must required",
+		})
+		return
+	}
+
+	if answer.QuestionID == 0 {
+		c.JSON(400, gin.H{
+			"message": "field questionId must required",
+		})
+		return
+	}
+
+	if answer.UserID == 0 {
+		c.JSON(400, gin.H{
+			"message": "field userId must required",
+		})
+		return
+	}
+
+	if answer.Answer == "" {
+		c.JSON(400, gin.H{
+			"message": "field answer must required",
+		})
+		return
+	}
+
+	err = eu.db.Create(&answer).Error
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "failed when create answer",
+		})
+		return
+	}
+
+	c.JSON(201, gin.H{
+		"status": "berhasil membuat answer",
+	})
+}
