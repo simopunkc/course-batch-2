@@ -123,3 +123,89 @@ func (eu ExerciseUsecase) CreateExercise(c *gin.Context) {
 		"status": "berhasil membuat exercise",
 	})
 }
+
+func (eu ExerciseUsecase) CreateQuestion(c *gin.Context) {
+	var question domain.Question
+	err := c.ShouldBind(&question)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "invalid input",
+		})
+		return
+	}
+
+	if question.ExerciseID == 0 {
+		c.JSON(400, gin.H{
+			"message": "field exerciseId must required",
+		})
+		return
+	}
+
+	if question.Body == "" {
+		c.JSON(400, gin.H{
+			"message": "field body must required",
+		})
+		return
+	}
+
+	if question.OptionA == "" {
+		c.JSON(400, gin.H{
+			"message": "field optionA must required",
+		})
+		return
+	}
+
+	if question.OptionB == "" {
+		c.JSON(400, gin.H{
+			"message": "field optionB must required",
+		})
+		return
+	}
+
+	if question.OptionC == "" {
+		c.JSON(400, gin.H{
+			"message": "field optionC must required",
+		})
+		return
+	}
+
+	if question.OptionD == "" {
+		c.JSON(400, gin.H{
+			"message": "field optionD must required",
+		})
+		return
+	}
+
+	if question.CorrectAnswer == "" {
+		c.JSON(400, gin.H{
+			"message": "field correctAnswer must required",
+		})
+		return
+	}
+
+	if question.Score == 0 {
+		c.JSON(400, gin.H{
+			"message": "field score must required",
+		})
+		return
+	}
+
+	if question.CreatorID == 0 {
+		c.JSON(400, gin.H{
+			"message": "field creatorId must required",
+		})
+		return
+	}
+
+	err = eu.db.Create(&question).Error
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "failed when create question",
+		})
+		return
+	}
+
+	c.JSON(201, gin.H{
+		"status": "berhasil membuat question",
+	})
+}

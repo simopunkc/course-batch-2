@@ -19,7 +19,7 @@ type Question struct {
 	OptionD       string
 	CorrectAnswer string
 	Score         int
-	CreateorID    int
+	CreatorID     int
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
