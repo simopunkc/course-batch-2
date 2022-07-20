@@ -86,3 +86,40 @@ func (exUsecase ExerciseUsecase) CalculateUserScore(c *gin.Context) {
 		"score": score,
 	})
 }
+
+func (eu ExerciseUsecase) CreateExercise(c *gin.Context) {
+	var exercise domain.Exercise
+	err := c.ShouldBind(&exercise)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "invalid input",
+		})
+		return
+	}
+
+	if exercise.Title == "" {
+		c.JSON(400, gin.H{
+			"message": "field title must required",
+		})
+		return
+	}
+
+	if exercise.Description == "" {
+		c.JSON(400, gin.H{
+			"message": "field description must required",
+		})
+		return
+	}
+
+	err = eu.db.Create(&exercise).Error
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "failed when create exercise",
+		})
+		return
+	}
+
+	c.JSON(201, gin.H{
+		"status": "berhasil membuat exercise",
+	})
+}

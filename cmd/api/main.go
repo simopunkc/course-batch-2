@@ -29,6 +29,7 @@ func main() {
 	userUsecase := user.NewUserUsecase(db)
 	r.POST("/register", userUsecase.Register)
 	r.POST("/login", userUsecase.Login)
+	r.POST("/exercises/", middleware.WithJWT(userUsecase), exerciseService.CreateExercise)
 
 	r.GET("/exercises/:id", middleware.WithJWT(userUsecase), exerciseService.GetExerciseByID)
 	r.GET("/exercises/:id/score", middleware.WithJWT(userUsecase), exerciseService.CalculateUserScore)
