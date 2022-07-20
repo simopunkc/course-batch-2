@@ -4,6 +4,7 @@ import (
 	"course/internal/domain"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -26,7 +27,30 @@ func (exUsecase ExerciseUsecase) GetExerciseByID(c *gin.Context) {
 		})
 		return
 	}
-	var exercise domain.Exercise
+
+	type Question struct {
+		ID            int       `json:"id"`
+		ExerciseID    int       `json:"-"`
+		Body          string    `json:"body"`
+		OptionA       string    `json:"option_a"`
+		OptionB       string    `json:"option_b"`
+		OptionC       string    `json:"option_c"`
+		OptionD       string    `json:"option_d"`
+		CorrectAnswer string    `json:"-"`
+		Score         int       `json:"score"`
+		CreatorID     int       `json:"-"`
+		CreatedAt     time.Time `json:"created_at"`
+		UpdatedAt     time.Time `json:"updated_at"`
+	}
+
+	type Exercise struct {
+		ID          int        `json:"id"`
+		Title       string     `json:"title"`
+		Description string     `json:"description"`
+		Questions   []Question `json:"questions"`
+	}
+
+	var exercise Exercise
 	err = exUsecase.db.Where("id = ?", id).Preload("Questions").Take(&exercise).Error
 	if err != nil {
 		c.JSON(404, map[string]interface{}{
@@ -34,6 +58,7 @@ func (exUsecase ExerciseUsecase) GetExerciseByID(c *gin.Context) {
 		})
 		return
 	}
+
 	c.JSON(200, exercise)
 }
 
@@ -120,23 +145,31 @@ func (eu ExerciseUsecase) CreateExercise(c *gin.Context) {
 	}
 
 	c.JSON(201, gin.H{
-		"status": "berhasil membuat exercise",
+		"id":          exercise.ID,
+		"title":       exercise.Title,
+		"description": exercise.Description,
 	})
 }
 
 func (eu ExerciseUsecase) CreateQuestion(c *gin.Context) {
 	var question domain.Question
-	err := c.ShouldBind(&question)
+
+	paramId := c.Param("id")
+	id, err := strconv.Atoi(paramId)
 	if err != nil {
-		c.JSON(400, gin.H{
-			"message": "invalid input",
+		c.JSON(400, map[string]interface{}{
+			"message": "invalid exercise id",
 		})
 		return
 	}
+	question.ExerciseID = id
 
-	if question.ExerciseID == 0 {
+	question.CreatorID = int(c.Request.Context().Value("user_id").(float64))
+
+	err = c.ShouldBind(&question)
+	if err != nil {
 		c.JSON(400, gin.H{
-			"message": "field exerciseId must required",
+			"message": "invalid input",
 		})
 		return
 	}
@@ -150,35 +183,35 @@ func (eu ExerciseUsecase) CreateQuestion(c *gin.Context) {
 
 	if question.OptionA == "" {
 		c.JSON(400, gin.H{
-			"message": "field optionA must required",
+			"message": "field option_a must required",
 		})
 		return
 	}
 
 	if question.OptionB == "" {
 		c.JSON(400, gin.H{
-			"message": "field optionB must required",
+			"message": "field option_b must required",
 		})
 		return
 	}
 
 	if question.OptionC == "" {
 		c.JSON(400, gin.H{
-			"message": "field optionC must required",
+			"message": "field option_c must required",
 		})
 		return
 	}
 
 	if question.OptionD == "" {
 		c.JSON(400, gin.H{
-			"message": "field optionD must required",
+			"message": "field option_d must required",
 		})
 		return
 	}
 
 	if question.CorrectAnswer == "" {
 		c.JSON(400, gin.H{
-			"message": "field correctAnswer must required",
+			"message": "field correct_answer must required",
 		})
 		return
 	}
@@ -186,13 +219,6 @@ func (eu ExerciseUsecase) CreateQuestion(c *gin.Context) {
 	if question.Score == 0 {
 		c.JSON(400, gin.H{
 			"message": "field score must required",
-		})
-		return
-	}
-
-	if question.CreatorID == 0 {
-		c.JSON(400, gin.H{
-			"message": "field creatorId must required",
 		})
 		return
 	}
@@ -206,37 +232,39 @@ func (eu ExerciseUsecase) CreateQuestion(c *gin.Context) {
 	}
 
 	c.JSON(201, gin.H{
-		"status": "berhasil membuat question",
+		"message": "berhasil membuat question",
 	})
 }
 
 func (eu ExerciseUsecase) CreateAnswer(c *gin.Context) {
 	var answer domain.Answer
-	err := c.ShouldBind(&answer)
+
+	paramId := c.Param("id")
+	id, err := strconv.Atoi(paramId)
+	if err != nil {
+		c.JSON(400, map[string]interface{}{
+			"message": "invalid exercise id",
+		})
+		return
+	}
+	answer.ExerciseID = id
+
+	paramIdQuestion := c.Param("qid")
+	qid, err := strconv.Atoi(paramIdQuestion)
+	if err != nil {
+		c.JSON(400, map[string]interface{}{
+			"message": "invalid question id",
+		})
+		return
+	}
+	answer.QuestionID = qid
+
+	answer.UserID = int(c.Request.Context().Value("user_id").(float64))
+
+	err = c.ShouldBind(&answer)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"message": "invalid input",
-		})
-		return
-	}
-
-	if answer.ExerciseID == 0 {
-		c.JSON(400, gin.H{
-			"message": "field exerciseId must required",
-		})
-		return
-	}
-
-	if answer.QuestionID == 0 {
-		c.JSON(400, gin.H{
-			"message": "field questionId must required",
-		})
-		return
-	}
-
-	if answer.UserID == 0 {
-		c.JSON(400, gin.H{
-			"message": "field userId must required",
 		})
 		return
 	}
@@ -257,6 +285,6 @@ func (eu ExerciseUsecase) CreateAnswer(c *gin.Context) {
 	}
 
 	c.JSON(201, gin.H{
-		"status": "berhasil membuat answer",
+		"message": "berhasil membuat answer",
 	})
 }
