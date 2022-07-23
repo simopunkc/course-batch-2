@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api-container:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: exercise-api
+    ports:
+      - "1234:1234"
+    depends_on:
+      - db-container
+    networks:
+      - mynet
+  db-container:
+    image: mysql
+    container_name: exercise-db
+    ports:
+      - "3306"
+    volumes:
+      - ./course.sql:/docker-entrypoint-initdb.d/dump.sql
+    environment:
+      MYSQL_USER: nonroot
+      MYSQL_PASSWORD: nonroot
+      MYSQL_ROOT_PASSWORD: nonroot
+      MYSQL_DATABASE: course2
+    networks:
+      - mynet
+
+networks:
+  mynet:
+    driver: bridge
