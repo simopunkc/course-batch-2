@@ -80,7 +80,7 @@ func (exUsecase ExerciseUsecase) CalculateUserScore(c *gin.Context) {
 		return
 	}
 
-	userID := int(c.Request.Context().Value("user_id").(float64))
+	userID := c.Request.Context().Value("user_id").(int)
 	var answers []domain.Answer
 	err = exUsecase.db.Where("user_id = ?", userID).Find(&answers).Error
 	if err != nil {
@@ -164,7 +164,7 @@ func (eu ExerciseUsecase) CreateQuestion(c *gin.Context) {
 	}
 	question.ExerciseID = id
 
-	question.CreatorID = int(c.Request.Context().Value("user_id").(float64))
+	question.CreatorID = c.Request.Context().Value("user_id").(int)
 
 	err = c.ShouldBind(&question)
 	if err != nil {
@@ -259,7 +259,7 @@ func (eu ExerciseUsecase) CreateAnswer(c *gin.Context) {
 	}
 	answer.QuestionID = qid
 
-	answer.UserID = int(c.Request.Context().Value("user_id").(float64))
+	answer.UserID = c.Request.Context().Value("user_id").(int)
 
 	err = c.ShouldBind(&answer)
 	if err != nil {

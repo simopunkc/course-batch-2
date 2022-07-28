@@ -5,8 +5,10 @@ import (
 	"course/internal/exercise"
 	"course/internal/middleware"
 	"course/internal/user"
+	"course/internal/user/repository"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -26,9 +28,9 @@ func main() {
 
 	db := database.NewConnDatabase()
 	exerciseService := exercise.NewExerciseUsecase(db)
-	userUsecase := user.NewUserUsecase(db)
-	r.POST("/register", userUsecase.Register)
-	r.POST("/login", userUsecase.Login)
+	// repo := repository.NewDatabaseRepo(db)
+	repo := repository.NewMicroserviceRepo()
+	userUsecase := user.NewUserUsecase(repo)
 	r.POST("/exercises", middleware.WithJWT(userUsecase), exerciseService.CreateExercise)
 	r.POST("/exercises/:id/questions", middleware.WithJWT(userUsecase), exerciseService.CreateQuestion)
 	r.POST("/exercises/:id/questions/:qid/answers", middleware.WithJWT(userUsecase), exerciseService.CreateAnswer)
@@ -36,5 +38,5 @@ func main() {
 	r.GET("/exercises/:id", middleware.WithJWT(userUsecase), exerciseService.GetExerciseByID)
 	r.GET("/exercises/:id/score", middleware.WithJWT(userUsecase), exerciseService.CalculateUserScore)
 
-	r.Run(":1234")
+	r.Run(":" + os.Getenv("APP_PORT"))
 }
